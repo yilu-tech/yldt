@@ -23,10 +23,12 @@ exports.init = function(){
         process.exit(0);
     }
 
+    
     var selfConfigPath = path.join(process.cwd(),'self.yml');
-
     try {
-        var self_file = fs.readFileSync(selfConfigPath, 'utf8');
+        if(fs.existsSync(selfConfigPath)){
+            var self_file = fs.readFileSync(selfConfigPath, 'utf8');
+        }
     } catch (e) {
         console.error(`Can not load ${baseConfigPath} file.`);
         process.exit(0);
