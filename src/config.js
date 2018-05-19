@@ -2,24 +2,21 @@ var yaml = require('js-yaml');
 var fs   = require('fs');
 var path = require('path');
 var deepAssign = require('deep-assign');
-exports.configs = {
+var configs = exports.configs = {
 
 };
 
 exports.init = function(){
     var baseConfigPath = path.join(process.cwd(),'yldt.yml');
-    console.log(baseConfigPath);
-    try {
-        var yldt_file = fs.readFileSync(baseConfigPath, 'utf8');
-    } catch (e) {
-        console.error(`Can not load ${baseConfigPath} file.`);
-        process.exit(0);
-    }
 
     try {
-        var configs = yaml.safeLoad(yldt_file);
+        if(fs.existsSync(baseConfigPath)){
+            var yldt_file = fs.readFileSync(baseConfigPath, 'utf8');
+            var baseConfigs = yaml.safeLoad(yldt_file);
+            configs = deepAssign(configs,baseConfigs);
+        }
     } catch (e) {
-        console.error(e);
+        console.error(`Can not load ${baseConfigPath} file.`);
         process.exit(0);
     }
 
@@ -28,20 +25,13 @@ exports.init = function(){
     try {
         if(fs.existsSync(selfConfigPath)){
             var self_file = fs.readFileSync(selfConfigPath, 'utf8');
+            var selfConfigs = yaml.safeLoad(self_file);
+            configs = deepAssign(configs,selfConfigs);
         }
     } catch (e) {
         console.error(`Can not load ${baseConfigPath} file.`);
         process.exit(0);
     }
-
-    try {
-        var selfConfigs = yaml.safeLoad(self_file);
-        configs = deepAssign(configs,selfConfigs);
-    } catch (e) {
-        console.error(e);
-        process.exit(0);
-    }
-    exports.configs = configs;
 }
 
 exports.register = function(path,name){
