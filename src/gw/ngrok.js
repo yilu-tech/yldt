@@ -2,7 +2,7 @@ var os = require('os');
 var path = require('path');
 var config = require('../config');
 const { spawn } = require('child_process');
-var fs = require('fs-extra');
+var fs = require('fs');
 var wget = require('node-wget-promise');
 
 const {zip, unzip, list} = require('zip-unzip-promise');
@@ -13,7 +13,6 @@ exports.run = async function(configfile, options){
     var command = await getCommand();
     var args = [];
 
-    console.log(123)
     if(!config.get('gateway-proxy') || !config.get('gateway-proxy').name){
         throw "gateway-proxy.name is required."
     }
