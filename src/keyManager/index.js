@@ -8,7 +8,7 @@ const HOSTS = require('../config').get('HOSTS');
 
 module.exports = function (program) {
 
-  program.command('key add', '添加用户到目标主机')
+  program.command('key add', '添加<username>到<host>')
     .alias('ka')
     .argument('<username>', '需要添加的用户名')
     .argument('<host>', '目标主机')
@@ -23,7 +23,7 @@ module.exports = function (program) {
       else { console.log(`无法连接主机${args.host}`); }
     });
 
-  program.command('key rm', '取消用户访问目标主机')
+  program.command('key rm', '取消<username>访问<host>')
     .alias('kr')
     .argument('<username>', '需要取消的用户名')
     .argument('<host>', '目标主机')
@@ -38,7 +38,7 @@ module.exports = function (program) {
       else { console.log(`无法连接主机${args.host}`); }
     });
 
-  program.command('key gen', '生成的密钥')
+  program.command('key gen', '生成<username>的密钥')
     .alias('kg')
     .argument('<username>', '密钥的用户名')
     .action(args => {
