@@ -1,4 +1,3 @@
-const execSync = require('child_process').execSync;
 const { exec } = require('../common');
 const { table } = require('table');
 
