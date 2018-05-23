@@ -2,9 +2,10 @@ const { execSync } = require('child_process');
 const { writeFileSync } = require('fs');
 const { readFileSync } = require('fs');
 const { existsSync } = require('fs');
+const { basename } = require('path');
 const arg = { stdio: 'inherit' };
 
-const dir = process.cwd().split('\\').pop();  // 获取当前目录名
+const dir = basename(process.cwd());  // 获取当前目录名
 
 module.exports = function (program) {
 
@@ -83,7 +84,14 @@ function genCli() {
 }
 
 function getContainerName() {
-  try { return execSync('docker ps').toString().match(/workbench/)[0] }
+  try { 
+    let lines = execSync('docker ps').toString().split('\n');
+    let bingo;
+    lines.forEach(line => {
+      if (line.match(/workbench/)) bingo = line.split(' ')[0];
+    });
+    return bingo;
+  }
   catch (e) { return null };
 }
 
