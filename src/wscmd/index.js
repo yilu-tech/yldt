@@ -26,7 +26,8 @@ module.exports = function (program) {
       else console.error('Error: 请确认当前目录中是否存在docker-compose.yml文件');
     });
 
-  program.command('cmd', '进入到容器')
+  program.command('wb cmd', '进入到容器')
+    .alias('cmd')
     .argument('[shell]', '指定终端，默认为zsh')
     .action(args => {
       if (args.shell == null) args.shell = 'zsh';
