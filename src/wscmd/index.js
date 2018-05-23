@@ -9,7 +9,7 @@ const dir = process.cwd().split('\\').pop();  // 获取当前目录名
 module.exports = function (program) {
 
 
-  program.command('ws init', '初始化workbench')
+  program.command('wb init', '初始化workbench')
     .action(() => {
       if (existsSync('./docker-compose.yml')) {
         let cname = getContainerName(), fname = getDCName();
@@ -29,7 +29,7 @@ module.exports = function (program) {
   program.command('cmd', '进入到容器')
     .argument('[shell]', '指定终端，默认为zsh')
     .action(args => {
-      if (args.shell == null) options.shell = 'zsh';
+      if (args.shell == null) args.shell = 'zsh';
       let cli = `docker exec -w /workspace/${dir} -it ${getContainerName()} ${args.shell}`;
       execSync(cli, arg);
     });
