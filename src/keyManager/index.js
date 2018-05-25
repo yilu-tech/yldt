@@ -84,7 +84,6 @@ module.exports = function (program) {
           .catch(err => console.log(err));
       }
     });
-
 }
 
 // 根据lists[0]类型判断kl命令是否有-u参数，继而打印结果
@@ -92,7 +91,7 @@ function addHeader(lists) {
   let tmp;
   if (lists[0] instanceof Array) {
     tmp = [['HOST', 'HUSER', 'USERS']];
-    lists.forEach(list => { tmp.push(list); });
+    lists.forEach(list => tmp.push(list));
     console.log(table(tmp));
   }
   else {
@@ -100,9 +99,7 @@ function addHeader(lists) {
       console.log(list.user);
       console.log('------------------------');
       tmp = [['HUSER', 'HOST']];
-      list.hosts.forEach(host => {
-        tmp.push(host);
-      })
+      list.hosts.forEach(host => tmp.push(host));
       console.log(table(tmp));
     })
   }
@@ -115,9 +112,7 @@ function searchUser(lists, usernames) {
       let hosts = [];
       lists.forEach(list => {
         list[2].forEach(user => { //list[2]: user
-          if (user == name) {
-            hosts.push([list[1], list[0]]); // list[1]: huser , list[0]: host
-          }
+          if (user == name) hosts.push([list[1], list[0]]); // list[1]: huser , list[0]: host
         });
       });
       users.push({ user: name, hosts: hosts });
@@ -128,7 +123,9 @@ function searchUser(lists, usernames) {
 // 将usernames转换成array
 function namesToArray(usernames) {
   let names = [];
-  if (usernames.split(' ').length > 1) { usernames.split(' ').forEach((username, i) => names.push(username)); }
+  if (usernames.split(' ').length > 1) {
+    usernames.split(' ').forEach(username => names.push(username));
+  }
   else names[0] = usernames;
   return names;
 }
@@ -136,11 +133,9 @@ function namesToArray(usernames) {
 function handleLists(lists, hosts) {
   return new Promise((resolve, reject) => {
     let keys = [];
-    lists.forEach(list => { keys.push(list.split('\n')); })
+    lists.forEach(list => keys.push(list.split('\n')))
     lists = [];
-    hosts.forEach((h, i) => {
-      lists[i] = (function () { return [hosts[i].host, hosts[i].huser, []]; }())
-    });
+    hosts.forEach(h => lists.push([h.host, h.huser, []]));
     keys.forEach((key, i) => {
       key.forEach(k => {
         lists[i][2].push(k.split(' ')[2].replace(/\b@yilu\b/, '')); // 去除 @yilu
@@ -164,13 +159,13 @@ function checkHost(host) {
   if (host.split(' ').length > 1) {
     host.split(' ').forEach((h, i) => {
       HOSTS.forEach(HOST => {
-        if (HOST.host == h) { hosts[i] = (function () { return HOST }()); }
+        if (HOST.host == h) hosts.push(HOST);
       });
     });
   }
   else {
     HOSTS.forEach(HOST => {
-      if (HOST.host == host) { hosts[0] = (function () { return HOST }()); }
+      if (HOST.host == host) hosts.push(HOST);
     });
   }
   return hosts;
@@ -178,7 +173,7 @@ function checkHost(host) {
 // 生成promise数组
 function makePromise(hosts) {
   let box = [];
-  hosts.forEach(h => { box.push(getHostList(h.host, h.huser)); });
+  hosts.forEach(h => box.push(getHostList(h.host, h.huser)));
   return box;
 }
 // 返回huser@host的ssh/authorized_keys内容
@@ -243,6 +238,15 @@ function hasNoUser(huser, host, username) {
   });
 }
 
+function hasNoKey(username) {
+  return new Promise((resolve, reject) => {
+    let cli = `ssh root@${MAINHOST} \"ls ${KEYPATH}/${username}\"`;
+    exec(cli)
+      .then(() => reject(false))
+      .catch(() => resolve(true));
+  });
+}
+
 function getPubKey(username) {
   return new Promise((resolve, reject) => {
     let cli = `ssh root@${MAINHOST} \"cat ${KEYPATH}/${username}.pub\"`;
@@ -252,14 +256,6 @@ function getPubKey(username) {
   });
 }
 
-function hasNoKey(username) {
-  return new Promise((resolve, reject) => {
-    let cli = `ssh root@${MAINHOST} \"ls ${KEYPATH}/${username}\"`;
-    exec(cli)
-      .then(() => reject(false))
-      .catch(() => resolve(true));
-  });
-}
 // 生成密钥
 function genKey(username) {
   return new Promise((resolve, reject) => {
