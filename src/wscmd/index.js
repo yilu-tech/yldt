@@ -12,7 +12,7 @@ module.exports = function (program) {
   program.command('wb init', '初始化workbench')
     .action(() => {
       if (fs.existsSync('./docker-compose.yml')) {
-        if (getContainer().cname) rmWorkbench();
+        if (getContainer()) rmWorkbench();
         workbenchUp();
       }
       else console.log('Error: 请确认当前目录中是否存在docker-compose.yml文件');
@@ -81,7 +81,6 @@ function getContainer() {
   prepaths.forEach(prepath => {
     if (process.cwd().indexOf(prepath.path) > -1) path = prepath;
   });
-  if (!path) { throw "路径有误，无法进入容器"; }
   return path;
 }
 
