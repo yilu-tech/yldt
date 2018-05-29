@@ -91,8 +91,8 @@ function getVolumePath(cname) {
 }
 
 function getCWDforWB() {
-  try { var prepath = getContainer(); }
-  catch (err) { throw err };
+  var prepath = getContainer();
+  if (!prepath) throw "路径有误，无法进入容器";
   let wbpath = "";
   let relation = path.relative(prepath.path, process.cwd());
   if (relation == "") wbpath = '/workspace';
