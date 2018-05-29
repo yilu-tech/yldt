@@ -6,7 +6,7 @@ const { exec } = require('../common');
 
 const arg = { stdio: 'inherit' };
 const dir = path.basename(process.cwd());  // 获取当前目录名
-
+var os = require('os');
 module.exports = function (program) {
 
   program.command('wb init', '初始化workbench')
@@ -87,7 +87,11 @@ function getContainer() {
 function getVolumePath(cname) {
   let info = JSON.parse(execSync(`docker inspect ${cname}`).toString());
   let wbpath = path.normalize(info[0].Mounts[0].Source);
-  return win32pathConvert(wbpath);
+  if(os.type() == 'Windows_NT'){
+    return win32pathConvert(wbpath);
+  }
+  return wbpath;
+  
 }
 
 function getCWDforWB() {
