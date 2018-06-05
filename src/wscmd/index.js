@@ -1,30 +1,27 @@
 const { execSync } = require('child_process');
-const { writeFileSync } = require('fs');
-const { readFileSync } = require('fs');
-const { existsSync } = require('fs');
-const { basename } = require('path');
+const fs = require('fs');
+const path = require('path');
+const yaml = require('js-yaml');
+const { exec } = require('../common');
+
 const arg = { stdio: 'inherit' };
-
-const dir = basename(process.cwd());  // 获取当前目录名
-
+const dir = path.basename(process.cwd());  // 获取当前目录名
+var os = require('os');
 module.exports = function (program) {
-
 
   program.command('wb init', '初始化workbench')
     .action(() => {
-      if (existsSync('./docker-compose.yml')) {
-        let cname = getContainerName(), fname = getDCName();
-        if (fname) {
-          if (!cname || cname !== fname) workbenchInit();
-          else {
-            execSync('docker-compose down', arg);
-            getImgsName().forEach(name => execSync(`docker rmi ${name}`, arg));
-            workbenchInit();
-          }
-        }
-        else console.error('Error: docker-compose.yml不匹配');
+      if (fs.existsSync('./docker-compose.yml')) {
+        if (getContainer()) rmWorkbench();
+        workbenchUp();
       }
-      else console.error('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      else console.log('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+    });
+
+  program.command('wb update', '更新workbench')
+    .action(() => {
+      if (fs.existsSync('./docker-compose.yml')) workbenchUpdate();
+      else console.log('Error: 请确认当前目录中是否存在docker-compose.yml文件');
     });
 
   program.command('wb cmd', '进入到容器')
@@ -32,8 +29,12 @@ module.exports = function (program) {
     .argument('[shell]', '指定终端，默认为zsh')
     .action(args => {
       if (args.shell == null) args.shell = 'zsh';
-      let cli = `docker exec -w /workspace/${dir} -it ${getContainerName()} ${args.shell}`;
-      execSync(cli, arg);
+      try {
+        let wbpath = getCWDforWB();
+        let cli = `docker exec -w ${wbpath} -it ${getContainer().cname} ${args.shell}`;
+        execSync(cli, arg);
+      }
+      catch (err) { console.log(err); }
     });
 
   program.command('composer')
@@ -61,12 +62,86 @@ function run() {
   catch (err) { }
 }
 
-function workbenchInit() {
-  execSync('docker pull yilutech/workbench', arg);
-  execSync('docker-compose up -d', arg);
+function workbenchUp() {
+  try {
+    linkKEY();
+    execSync('docker pull yilutech/workbench', arg);
+    execSync('docker-compose up -d', arg);
+  }
+  catch (err) { console.log(err); }
 }
 
-function getImgsName() {
+function getContainer() {
+  let ids = getContainerID();
+  let prepaths = [];
+  let path;
+  ids.forEach(id => {
+    prepaths.push({ cname: id, path: getVolumePath(id) });
+  });
+  prepaths.forEach(prepath => {
+    if (process.cwd().indexOf(prepath.path) > -1) path = prepath;
+  });
+  return path;
+}
+
+function getVolumePath(cname) {
+  let info = JSON.parse(execSync(`docker inspect ${cname}`).toString());
+  let wbpath = path.normalize(info[0].Mounts[0].Source);
+  if(os.type() == 'Windows_NT'){
+    return win32pathConvert(wbpath);
+  }
+  return wbpath;
+  
+}
+
+function getCWDforWB() {
+  var prepath = getContainer();
+  if (!prepath) throw "路径有误，无法进入容器";
+  let wbpath = "";
+  let relation = path.relative(prepath.path, process.cwd());
+  if (relation == "") wbpath = '/workspace';
+  else {
+    wbpath = path.join('/workspace', relation);
+    if (process.platform == 'win32') wbpath = wbpath.replace(/\\/g, '/');
+  }
+  return wbpath;
+}
+
+function getContainerID() {
+  let dps = execSync(`docker ps`).toString().split('\n');
+  let id = [];
+  dps.forEach(line => {
+    if (line.match(/workbench/)) id.push(line.split(' ')[0]);
+  });
+  return id;
+}
+
+function linkKEY() {
+  let src = path.join(process.env.HOME, '.ssh/id_rsa');
+  let des = path.join(process.cwd(), 'docker/id_rsa');
+  fs.copyFileSync(src, des);
+}
+
+function workbenchUpdate() {
+  try {
+    execSync('docker-compose down', arg);
+    let names = getImgName();
+    execSync(`docker rmi ${names[0]}`, arg);
+  }
+  catch (err) { console.log(err); }
+  workbenchUp();
+}
+
+function rmWorkbench() {
+  try {
+    execSync('docker-compose down', arg);
+    let names = getImgName();
+    execSync(`docker rmi ${names[0]} ${names[1]}`, arg);
+  }
+  catch (err) { console.log(err); }
+}
+
+function getImgName() {
   let names = [];
   execSync('docker images').toString().split('\n').forEach(e => {
     if (e.match(/workbench/)) names.splice(names.length, 0, e.split(' ').shift());
@@ -80,23 +155,10 @@ function genCli() {
   argv.shift();
   argv.shift();
   let cmd = argv.join(' ');
-  return `docker exec -w /workspace/${dir} -it ${getContainerName()} ${cmd}`;
+  let wbpath = getCWDforWB();
+  return `docker exec -w ${wbpath} -it ${getContainer().cname} ${cmd}`;
 }
 
-function getContainerName() {
-  try { 
-    let lines = execSync('docker ps').toString().split('\n');
-    let bingo;
-    lines.forEach(line => {
-      if (line.match(/workbench/)) bingo = line.split(' ')[0];
-    });
-    return bingo;
-  }
-  catch (e) { return null };
+function win32pathConvert(path) {
+  return `${path[1].toUpperCase()}:${path.substring(2, path.length)}`;
 }
-
-function getDCName() {
-  try { return readFileSync('./docker-compose.yml', 'utf8').match(/workbench/)[0]; }
-  catch (e) { return null }
-}
-
