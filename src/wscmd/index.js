@@ -52,7 +52,7 @@ module.exports = function (program) {
     .option('--disable')
     .action(() => { run(); });
 
-
+ 
 }
 
 
@@ -87,11 +87,10 @@ function getContainer() {
 function getVolumePath(cname) {
   let info = JSON.parse(execSync(`docker inspect ${cname}`).toString());
   let wbpath = path.normalize(info[0].Mounts[0].Source);
-  if(os.type() == 'Windows_NT'){
+  if (os.type() == 'Windows_NT') {
     return win32pathConvert(wbpath);
   }
   return wbpath;
-  
 }
 
 function getCWDforWB() {
@@ -102,7 +101,7 @@ function getCWDforWB() {
   if (relation == "") wbpath = '/workspace';
   else {
     wbpath = path.join('/workspace', relation);
-    if (process.platform == 'win32') wbpath = wbpath.replace(/\\/g, '/');
+    if (os.type() == 'Windows_NT') wbpath = wbpath.replace(/\\/g, '/');
   }
   return wbpath;
 }
@@ -160,5 +159,6 @@ function genCli() {
 }
 
 function win32pathConvert(path) {
-  return `${path[1].toUpperCase()}:${path.substring(2, path.length)}`;
+  let location = path.indexOf('\\c\\Users');
+  return `${path[location + 1].toUpperCase()}:${path.substring(location + 2, path.length)}`;
 }
