@@ -8,6 +8,60 @@ const arg = { stdio: 'inherit' };
 
 module.exports = function (program) {
 
+  program.command('wb stop', '停止')
+    .alias('stop')
+    .action(() => {
+      try {
+        if (fs.existsSync('./docker-compose.yml')) {
+          let cli = "docker-compose stop";
+          execSync(cli, arg);
+        }
+        else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      }
+      catch (err) { console.log(err.message); }
+    });
+
+  program.command('wb start', '启动')
+    .alias('start')
+    .action(() => {
+      try {
+        if (fs.existsSync('./docker-compose.yml')) {
+          let cli = "docker-compose start";
+          execSync(cli, arg);
+        }
+        else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      }
+      catch (err) { console.log(err.message); }
+    });
+
+  program.command('wb restart', '重启')
+    .alias('restart')
+    .argument('[cname]', '指定需要重启的容器')
+    .action((args) => {
+      try {
+        if (fs.existsSync('./docker-compose.yml')) {
+          let cli = "docker-compose restart";
+          if (args.cname) cli = `docker restart ${args.cname}`;
+          execSync(cli, arg);
+        }
+        else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      }
+      catch (err) { console.log(err.message); }
+    });
+
+  program.command('wb down', '卸载')
+    .alias('down')
+    .action(() => {
+      try {
+        if (fs.existsSync('./docker-compose.yml')) {
+          let cli = "docker-compose down";
+          execSync(cli, arg);
+        }
+        else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      }
+      catch (err) { console.log(err.message); }
+    });
+
   program.command('wb init', '初始化workbench')
     .action(() => {
       try {
@@ -17,7 +71,7 @@ module.exports = function (program) {
         }
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err); }
+      catch (err) { console.log(err.message); }
     });
 
   program.command('wb update', '更新workbench')
@@ -26,7 +80,7 @@ module.exports = function (program) {
         if (fs.existsSync('./docker-compose.yml')) workbenchUpdate();
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err); }
+      catch (err) { console.log(err.message); }
     });
 
   program.command('wb cmd', '进入到容器')
@@ -39,20 +93,23 @@ module.exports = function (program) {
         let cli = `docker exec -w ${wbpath} -it ${getContainer().cname} ${args.shell}`;
         execSync(cli, arg);
       }
-      catch (err) { if (err.error != null) console.log(err); }
+      catch (err) { if (err.error != null) console.log(err.message); }
     });
 
-  program.command('composer')
+  program.command('wb composer', '在workbench中执行composer')
+    .alias('composer')
     .argument('[subcmd...]', 'composer 二级命令')
     .option('--disable')
     .action(() => { run(); });
 
-  program.command('npm')
+  program.command('wb npm', '在workbench中执行npm')
+    .alias('npm')
     .argument('[subcmd...]', 'npm 二级命令')
     .option('--disable')
     .action(() => { run(); });
 
-  program.command('php artisan')
+  program.command('wb php artisan', '在workbench中执行php artisan')
+    .alias('php artisan')
     .argument('[subcmd...]', 'php artisan 二级命令')
     .option('--disable')
     .action(() => { run(); });
@@ -62,9 +119,16 @@ module.exports = function (program) {
 
 
 function run() {
-  let cli = genCli();
-  try { execSync(cli, arg); }
-  catch (err) { }
+  try {
+    let argv = process.argv;
+    argv.shift();
+    argv.shift();
+    let cmd = argv.join(' ');
+    let wbpath = getCWDforWB(workbench);
+    let cli = `docker exec -w ${wbpath} -it ${getContainer().cname} ${cmd}`;
+    execSync(cli, arg);
+  }
+  catch (err) { console.log(err.message); }
 }
 
 function workbenchUp() {
@@ -143,18 +207,9 @@ function getImgName() {
   return names;
 }
 
-function genCli() {
-  let argv = process.argv;
-  argv.shift();
-  argv.shift();
-  let cmd = argv.join(' ');
-  let wbpath = getCWDforWB();
-  return `docker exec -w ${wbpath} -it ${getContainer().cname} ${cmd}`;
-}
-
 function win32pathConvert(path) {
   let location = 0;
-  if (path.split('\\')[1].length == 1) location = 0;
   if (path.split('\\')[2].length == 1) location = 9;
+  if (path.split('\\')[1].length == 1) location = 0;
   return `${path[location + 1].toUpperCase()}:${path.substring(location + 2, path.length)}`;
 }
