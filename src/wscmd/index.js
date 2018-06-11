@@ -159,6 +159,8 @@ function genCli() {
 }
 
 function win32pathConvert(path) {
-  let location = path.indexOf('\\c\\Users');
+  let location = 0;
+  if (path.split('\\')[1].length == 1) location = 0;
+  if (path.split('\\')[2].length == 1) location = 9;
   return `${path[location + 1].toUpperCase()}:${path.substring(location + 2, path.length)}`;
 }
