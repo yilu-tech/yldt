@@ -124,7 +124,7 @@ function run() {
     argv.shift();
     argv.shift();
     let cmd = argv.join(' ');
-    let wbpath = getCWDforWB(workbench);
+    let wbpath = getCWDforWB();
     let cli = `docker exec -w ${wbpath} -it ${getContainer().cname} ${cmd}`;
     execSync(cli, arg);
   }
