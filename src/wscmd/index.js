@@ -1,27 +1,32 @@
-const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const yaml = require('js-yaml');
-const { exec } = require('../common');
+const os = require('os');
+
+const { execSync } = require('child_process');
 
 const arg = { stdio: 'inherit' };
-const dir = path.basename(process.cwd());  // 获取当前目录名
-var os = require('os');
+
 module.exports = function (program) {
 
   program.command('wb init', '初始化workbench')
     .action(() => {
-      if (fs.existsSync('./docker-compose.yml')) {
-        if (getContainer()) rmWorkbench();
-        workbenchUp();
+      try {
+        if (fs.existsSync('./docker-compose.yml')) {
+          if (getContainer()) rmWorkbench();
+          workbenchUp();
+        }
+        else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      else console.log('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      catch (err) { console.log(err); }
     });
 
   program.command('wb update', '更新workbench')
     .action(() => {
-      if (fs.existsSync('./docker-compose.yml')) workbenchUpdate();
-      else console.log('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      try {
+        if (fs.existsSync('./docker-compose.yml')) workbenchUpdate();
+        else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb cmd', '进入到容器')
@@ -34,7 +39,7 @@ module.exports = function (program) {
         let cli = `docker exec -w ${wbpath} -it ${getContainer().cname} ${args.shell}`;
         execSync(cli, arg);
       }
-      catch (err) { console.log(err); }
+      catch (err) { if (err.error != null) console.log(err); }
     });
 
   program.command('composer')
@@ -52,7 +57,7 @@ module.exports = function (program) {
     .option('--disable')
     .action(() => { run(); });
 
- 
+
 }
 
 
@@ -63,12 +68,9 @@ function run() {
 }
 
 function workbenchUp() {
-  try {
-    linkKEY();
-    execSync('docker pull yilutech/workbench', arg);
-    execSync('docker-compose up -d', arg);
-  }
-  catch (err) { console.log(err); }
+  linkKEY();
+  execSync('docker pull yilutech/workbench', arg);
+  execSync('docker-compose up -d', arg);
 }
 
 function getContainer() {
@@ -87,9 +89,7 @@ function getContainer() {
 function getVolumePath(cname) {
   let info = JSON.parse(execSync(`docker inspect ${cname}`).toString());
   let wbpath = path.normalize(info[0].Mounts[0].Source);
-  if (os.type() == 'Windows_NT') {
-    return win32pathConvert(wbpath);
-  }
+  if (os.type() == 'Windows_NT') return win32pathConvert(wbpath);
   return wbpath;
 }
 
@@ -122,22 +122,16 @@ function linkKEY() {
 }
 
 function workbenchUpdate() {
-  try {
-    execSync('docker-compose down', arg);
-    let names = getImgName();
-    execSync(`docker rmi ${names[0]}`, arg);
-  }
-  catch (err) { console.log(err); }
+  execSync('docker-compose down', arg);
+  let names = getImgName();
+  execSync(`docker rmi ${names[0]}`, arg);
   workbenchUp();
 }
 
 function rmWorkbench() {
-  try {
-    execSync('docker-compose down', arg);
-    let names = getImgName();
-    execSync(`docker rmi ${names[0]} ${names[1]}`, arg);
-  }
-  catch (err) { console.log(err); }
+  execSync('docker-compose down', arg);
+  let names = getImgName();
+  execSync(`docker rmi ${names[0]} ${names[1]}`, arg);
 }
 
 function getImgName() {

@@ -11,5 +11,5 @@ require('./src/keyManager')(prog)
 
 require('./src/wscmd')(prog)
 
+prog.version('1.0.1')
 prog.parse(process.argv);
-
