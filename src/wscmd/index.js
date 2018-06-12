@@ -180,21 +180,24 @@ function getContainerID() {
 }
 
 function linkKEY() {
-  let src = path.join(process.env.HOME, '.ssh/id_rsa');
+  let home = "";
+  if (os.type() == 'Windows_NT') home = process.env.userprofile;
+  else home = process.env.HOME;
+  let src = path.join(home, '.ssh/id_rsa');
   let des = path.join(process.cwd(), 'docker/id_rsa');
   fs.copyFileSync(src, des);
 }
 
 function workbenchUpdate() {
-  execSync('docker-compose down', arg);
   let names = getImgName();
+  execSync('docker-compose down', arg);
   execSync(`docker rmi ${names[0]}`, arg);
   workbenchUp();
 }
 
 function rmWorkbench() {
-  execSync('docker-compose down', arg);
   let names = getImgName();
+  execSync('docker-compose down', arg);
   execSync(`docker rmi ${names[0]} ${names[1]}`, arg);
 }
 
