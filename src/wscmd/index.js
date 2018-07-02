@@ -8,6 +8,19 @@ const arg = { stdio: 'inherit' };
 
 module.exports = function (program) {
 
+  program.command('wb ps', '查看workbench运行情况')
+    .alias('ps')
+    .action(() => {
+      try {
+        if (fs.existsSync('./docker-compose.yml')) {
+          let cli = "docker-compose ps";
+          execSync(cli, arg);
+        }
+        else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      }
+      catch (err) { console.log(err.message); }
+    });
+
   program.command('wb stop', '停止')
     .alias('stop')
     .action(() => {
@@ -213,6 +226,5 @@ function getImgName() {
 function win32pathConvert(path) {
   let location = 0;
   if (path.split('\\')[2].length == 1) location = 9;
-  if (path.split('\\')[1].length == 1) location = 0;
   return `${path[location + 1].toUpperCase()}:${path.substring(location + 2, path.length)}`;
 }

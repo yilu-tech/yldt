@@ -4,7 +4,7 @@ require('./src/caporal/command');
 
 const prog = require('caporal');
 
-prog.version('1.0.5');
+prog.version('1.0.6');
 
 require('./src/config').init();
 
