@@ -22,7 +22,16 @@ exports.run = function(){
             res.end();
             return;
         }
-        proxy.web(req, res, { target: target});
+        try{
+            proxy.web(req, res, { target: target});
+        }catch(e){
+            res.end(JSON.stringify({
+                cause:'Local proxy failed.',
+                message:e.message,
+                target:target,
+            }))
+        }
+        
     });
       
     console.log("listening on port 10802")

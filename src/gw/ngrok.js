@@ -7,7 +7,7 @@ var wget = require('node-wget-promise');
 
 const {zip, unzip, list} = require('zip-unzip-promise');
 
-
+var ngrokProcess;
 exports.run = async function(configfile, options){
     console.info('Start gateway ngrok...');
     var command = await getCommand();
@@ -32,13 +32,19 @@ exports.run = async function(configfile, options){
     var configPath = ngrokPath;
     args.push(`-config=${configPath}`);
     args.push('10802');
-    const ngrok = spawn(command,args);
-
-    ngrok.stdout.on('data',stdout);
+    ngrokProcess = spawn(command,args);
+    ngrokProcess.stdout.on('data',stdout);
       
-    ngrok.stderr.on('data',stderr);
+    ngrokProcess.stderr.on('data',stderr);
     
-    ngrok.on('close',close);
+    //ngrok退出的时候kill主进程
+    ngrokProcess.on('close',close);
+
+    //主进程关闭的时候kill ngrok
+    process.on('exit',function(){
+        spawn('kill',['-9',ngrokProcess['pid']]);
+        console.error("\n---> process exited.")
+    })
 
 }
 
