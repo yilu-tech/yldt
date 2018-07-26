@@ -4,13 +4,11 @@ require('./src/caporal/command');
 
 const prog = require('caporal');
 
-prog.version('1.0.6');
+prog.version('1.0.8');
 
 require('./src/config').init();
 
 require('./src/gw')(prog)
-
-require('./src/keyManager')(prog)
 
 require('./src/wscmd')(prog)
 
