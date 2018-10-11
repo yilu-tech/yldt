@@ -89,7 +89,8 @@ async function getBin(filename){
       };
       if(!fs.existsSync(zipfilePath)){
         console.log('download')
-        var url = `https://github.com/yilu-tech/yldt/releases/download/0.0.1/${filename}.zip`
+        // var url = `https://github.com/yilu-tech/yldt/releases/download/0.0.1/${filename}.zip`
+        var url = `http://yilu-develop.oss-cn-hangzhou.aliyuncs.com/ngrok/${filename}.zip`
         await wget(url,options);
       }
 

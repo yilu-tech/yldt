@@ -18,7 +18,7 @@ module.exports = function (program) {
         }
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err.message); }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb stop', '停止')
@@ -31,7 +31,7 @@ module.exports = function (program) {
         }
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err.message); }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb start', '启动')
@@ -44,7 +44,7 @@ module.exports = function (program) {
         }
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err.message); }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb restart', '重启')
@@ -59,7 +59,7 @@ module.exports = function (program) {
         }
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err.message); }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb down', '卸载')
@@ -72,7 +72,21 @@ module.exports = function (program) {
         }
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err.message); }
+      catch (err) { console.log(err); }
+    });
+
+  program.command('wb up', '启动')
+    .alias('up')
+    .option('-d, --daemon', '后台运行')
+    .action((option) => {
+      try {
+        if (fs.existsSync('./docker-compose.yml')) {
+          let cli = "docker-compose up -d";
+          execSync(cli, arg);
+        }
+        else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
+      }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb init', '初始化workbench')
@@ -84,7 +98,7 @@ module.exports = function (program) {
         }
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err.message); }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb update', '更新workbench')
@@ -93,7 +107,7 @@ module.exports = function (program) {
         if (fs.existsSync('./docker-compose.yml')) workbenchUpdate();
         else throw ('Error: 请确认当前目录中是否存在docker-compose.yml文件');
       }
-      catch (err) { console.log(err.message); }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb cmd', '进入到容器')
@@ -106,7 +120,7 @@ module.exports = function (program) {
         let cli = `docker exec -w ${wbpath} -it ${getContainer().cname} ${args.shell}`;
         execSync(cli, arg);
       }
-      catch (err) { if (err.error != null) console.log(err.message); }
+      catch (err) { console.log(err); }
     });
 
   program.command('wb composer', '在workbench中执行composer')
@@ -141,7 +155,7 @@ function run() {
     let cli = `docker exec -w ${wbpath} -it ${getContainer().cname} ${cmd}`;
     execSync(cli, arg);
   }
-  catch (err) { console.log(err.message); }
+  catch (err) { console.log(err); }
 }
 
 function workbenchUp() {
