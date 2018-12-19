@@ -141,6 +141,10 @@ module.exports = function (program) {
     .option('--disable')
     .action(() => { run(); });
 
+  program.command('test')
+    .action(() => {
+      console.log(getContainer());
+    })
 
 }
 
@@ -179,7 +183,13 @@ function getContainer() {
 
 function getVolumePath(cname) {
   let info = JSON.parse(execSync(`docker inspect ${cname}`).toString());
-  let wbpath = path.normalize(info[0].Mounts[0].Source);
+  let wbpath = '';
+  info[0].Mounts.forEach(Mount => {
+    if (Mount.Destination == "/workspace") {
+      wbpath = path.normalize(Mount.Source);
+    }
+  });
+
   if (os.type() == 'Windows_NT') return win32pathConvert(wbpath);
   return wbpath;
 }
