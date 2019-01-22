@@ -71,8 +71,9 @@ async function getCommand(){
         var filename = "ngrok-Darwin-64";
         return await getBin(filename);
 
-    }else if(osType == 'linux'){
-
+    }else if(osType == 'Linux'){
+        var filename = "ngrok-linux-64";
+        return await getBin(filename);
     }else if(osType == 'Windows_NT'){
         var filename = "ngrok-windows-64.exe";
         return await getBin(filename);
