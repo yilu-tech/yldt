@@ -8,7 +8,7 @@ exports.run = function(options){
 
     var server = http.createServer(function(req, res) {
 
-        let target = req.headers['proxy-url'];
+        let target = req.headers['local-url'];
 
         if(!target){
             res.writeHead(200, { 'Content-Type': 'text/plain' });
