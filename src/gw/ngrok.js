@@ -1,6 +1,5 @@
 var os = require('os');
 var path = require('path');
-var config = require('../config');
 const { spawn } = require('child_process');
 var fs = require('fs');
 var wget = require('node-wget-promise');
@@ -8,19 +7,19 @@ var wget = require('node-wget-promise');
 const {zip, unzip, list} = require('zip-unzip-promise');
 
 var ngrokProcess;
-exports.run = async function(configfile, options){
+exports.run = async function(options){
     console.info('Start gateway ngrok...');
     var command = await getCommand();
     var args = [];
 
-    if(!config.get('gateway-proxy') || !config.get('gateway-proxy').name){
+    if(!options.name){
         throw "gateway-proxy.name is required."
     }
 
-    if(!config.get('gateway-proxy') || !config.get('gateway-proxy').port){
+    if(!options.port){
         throw "gateway-proxy.port is required."
     }
-    var ngrokCfg = `server_addr: "gw.proxy:${config.get('gateway-proxy').port}"\n`
+    var ngrokCfg = `server_addr: "gw.proxy:${options.port}"\n`
     ngrokCfg = `${ngrokCfg}trust_host_root_certs: false`;
     
     console.log(path.join(__dirname,'ngrok.cfg'));
@@ -28,7 +27,7 @@ exports.run = async function(configfile, options){
     fs.writeFileSync(ngrokPath,ngrokCfg);
 
 
-    args.push(`-subdomain=${config.get('gateway-proxy').name}`);
+    args.push(`-subdomain=${options.name}`);
     var configPath = ngrokPath;
     args.push(`-config=${configPath}`);
     args.push('10802');

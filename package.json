@@ -10,11 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "caporal": "^0.10.0",
-    "deep-assign": "^2.0.0",
     "http-proxy": "^1.17.0",
     "ip": "^1.1.5",
-    "js-yaml": "^3.11.0",
-    "minimatch": "^3.0.4",
     "node-wget-promise": "^0.1.4",
     "table": "^4.0.3",
     "zip-unzip-promise": "^1.1.0"
