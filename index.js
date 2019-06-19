@@ -4,7 +4,7 @@ require('./src/caporal/command');
 
 const prog = require('caporal');
 
-prog.version('1.0.11');
+prog.version(require('./package.json').version);
 
 require('./src/gw')(prog)
 
