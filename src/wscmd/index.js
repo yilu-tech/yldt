@@ -133,7 +133,7 @@ module.exports = function (program) {
             let cli = `docker exec -i ${getContainer().cname} nvim ${wbpath}`;
             let cname = getContainer().cname;
             if (args.target == null ) args.target = wbpath;
-            spawnSync('docker', ['exec', '-w', wbpath,'-it', cname, 'nvim', args.target],{
+            spawnSync('docker', ['exec', '-w', wbpath,'-it', '-e', 'FZF_DEFAULT_COMMAND=find ./ -type f', cname, 'nvim', args.target],{
                 stdio: 'inherit'
             });
         }
