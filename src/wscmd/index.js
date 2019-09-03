@@ -3,6 +3,7 @@ const path = require('path');
 const os = require('os');
 
 const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 
 const arg = { stdio: 'inherit' };
 
@@ -121,6 +122,22 @@ module.exports = function (program) {
         execSync(cli, arg);
       }
       catch (err) { console.log(err); }
+    });
+
+  program.command('wb vi', '通过vi打开')
+    .alias('vi')
+    .argument('[target]', '所需编辑的对象, 默认: 容器中执行命令的相对当前路径')
+    .action(args => {
+        try {
+            let wbpath = getCWDforWB();
+            let cli = `docker exec -i ${getContainer().cname} nvim ${wbpath}`;
+            let cname = getContainer().cname;
+            if (args.target == null ) args.target = wbpath;
+            spawnSync('docker', ['exec', '-w', wbpath,'-it', cname, 'nvim', args.target],{
+                stdio: 'inherit'
+            });
+        }
+        catch (err) { console.log(err); }
     });
 
   program.command('wb composer', '在workbench中执行composer')
