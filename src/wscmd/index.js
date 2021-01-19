@@ -115,7 +115,7 @@ module.exports = function (program) {
     .alias('cmd')
     .argument('[shell]', '指定终端，默认为zsh')
     .action(args => {
-      if (args.shell == null) args.shell = 'zsh';
+      if (args.shell == null) args.shell = 'bash';
       try {
         let wbpath = getCWDforWB();
         let cli = `docker exec -w ${wbpath} -it ${getContainer().cname} ${args.shell}`;
@@ -133,7 +133,7 @@ module.exports = function (program) {
             let cli = `docker exec -i ${getContainer().cname} nvim ${wbpath}`;
             let cname = getContainer().cname;
             if (args.target == null ) args.target = wbpath;
-            spawnSync('docker', ['exec', '-w', wbpath,'-it', '-e', 'FZF_DEFAULT_COMMAND=find ./ -type f', cname, 'nvim', args.target],{
+            spawnSync('docker', ['exec', '-w', wbpath,'-it', cname, 'vim', args.target],{
                 stdio: 'inherit'
             });
         }
